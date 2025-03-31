@@ -1,0 +1,44 @@
+* { box-sizing: border-box; }
+body, html { 
+    height: 100%; 
+    margin: 0; /* Убираем отступы, чтобы не было прокрутки */
+    /* overflow: hidden; */
+}
+
+body { background-color: #000; color: #fff; }
+
+h1 {
+    font-family: "Playfair Display";
+    font-size: 30px;
+    padding: 10px 0;
+    margin: 0;
+}
+
+.field {
+    position: relative;
+    width: 700px;  /* Уменьшаем размер карты */
+    height: 400px; /* Уменьшаем размер карты */
+}
+
+.tile {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    background-size: 100%;
+    z-index: 5;
+}
+
+.tileW { background-image: url(img/tile-W.png); }
+.tileE { background-image: url(img/tile-E.png); z-index: 10; }
+.tileP { background-image: url(img/tile-P.png); z-index: 10; }
+.tileHP { background-image: url(img/tile-HP.png); z-index: 9; }
+.tileSW { background-image: url(img/tile-SW.png); z-index: 9; }
+
+.health {
+    background-color: red;
+    z-index: 11;
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 3px;
+}
