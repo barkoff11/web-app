@@ -13,13 +13,32 @@ function Game() {
         }
         this.placeItems("SW", 2);
         this.placeItems("HP", 10);
-        this.enemies = this.placeEnemies(); // Сохраняем врагов в `this.enemies`
+        this.enemies = this.placeEnemies();
 
         this.renderMap();
         attachControls(this.hero, this);
     };
 
-    this.attack = function (hero, game) {
+    // Универсальная функция для перемещения
+    this.moveEntity = function(entity, direction) {
+        let newX = entity.x;
+        let newY = entity.y;
+
+        switch (direction) {
+            case 0: newY -= 1; break;  // Вверх
+            case 1: newY += 1; break;  // Вниз
+            case 2: newX -= 1; break;  // Влево
+            case 3: newX += 1; break;  // Вправо
+        }
+
+        if (newX >= 0 && newX < width && newY >= 0 && newY < height && this.map[newY][newX] === "floor") {
+            this.map[entity.y][entity.x] = "floor";
+            entity.x = newX;
+            entity.y = newY;
+            this.map[entity.y][entity.x] = entity === this.hero ? "P" : "E";
+        }
+    };
+    this.attack = function(hero, game) {
         if (this.isGameOver) return;
         let attackArea = [
             { x: hero.x - 1, y: hero.y },  // Слева
@@ -31,15 +50,15 @@ function Game() {
         attackArea.forEach(pos => {
             if (pos.x >= 0 && pos.x < width && pos.y >= 0 && pos.y < height) {
                 if (game.map[pos.y][pos.x] === "E") {
-                    game.map[pos.y][pos.x] = "floor";  // Убираем врага с карты
-                    game.enemies = game.enemies.filter(enemy => !(enemy.x === pos.x && enemy.y === pos.y)); // Убираем из массива врагов
-                    hero.health -= 25;  // Враг отнимает 25% здоровья героя
+                    game.map[pos.y][pos.x] = "floor";  
+                    game.enemies = game.enemies.filter(enemy => !(enemy.x === pos.x && enemy.y === pos.y)); 
+                    hero.health -= 25;
                     console.log(`Атака! Текущее здоровье: ${hero.health}, атака: ${hero.attack}`);
                 }
             }
         });
         game.checkHeroHealth();
-        game.renderMap();  // Обновляем карту
+        game.renderMap();
     };
 
     this.gameOver = function() {
@@ -64,7 +83,7 @@ function Game() {
     };
 
     this.generateRooms = function () {
-        let roomCount = Math.floor(Math.random() * 6) + 6; // От 5 до 10 комнат
+        let roomCount = Math.floor(Math.random() * 6) + 6;
         let rooms = [];
     
         for (let i = 0; i < roomCount; i++) {
@@ -79,7 +98,6 @@ function Game() {
                 }
             }
     
-            // Сохраняем центр комнаты
             rooms.push({ x: Math.floor(x + roomWidth / 2), y: Math.floor(y + roomHeight / 2) });
         }
     
@@ -93,14 +111,12 @@ function Game() {
     
             let x1 = roomA.x, y1 = roomA.y;
             let x2 = roomB.x, y2 = roomB.y;
-    
-            // Сначала горизонтальный коридор
-            while (x1 !== x2) {
+
+                while (x1 !== x2) {
                 this.map[y1][x1] = "floor";
                 x1 += x1 < x2 ? 1 : -1;
             }
     
-            // Затем вертикальный коридор
             while (y1 !== y2) {
                 this.map[y1][x1] = "floor";
                 y1 += y1 < y2 ? 1 : -1;
@@ -151,38 +167,13 @@ function Game() {
 
     this.moveEnemies = function () {
         this.enemies.forEach(enemy => {
-            let direction = Math.floor(Math.random() * 4);  // 0 - вверх, 1 - вниз, 2 - влево, 3 - вправо
-            let newX = enemy.x;
-            let newY = enemy.y;
-    
-            // Движение врага в случайном направлении
-            switch (direction) {
-                case 0: newY -= 1; break;  // Вверх
-                case 1: newY += 1; break;  // Вниз
-                case 2: newX -= 1; break;  // Влево
-                case 3: newX += 1; break;  // Вправо
-            }
-    
-            // Проверка на допустимость нового положения
-            if (newX >= 0 && newX < width && newY >= 0 && newY < height && this.map[newY][newX] === "floor") {
-                // Если враг достиг героя, наносим урон
-                if (newX === this.hero.x && newY === this.hero.y) {
-                    this.hero.health -= 10;  // Урон от врага
-                    console.log(`Герой получил урон! Текущее здоровье: ${this.hero.health}`);
-                    this.checkHeroHealth();  // Проверяем здоровье героя
-                }
-    
-                // Обновляем позицию врага
-                this.map[enemy.y][enemy.x] = "floor";  // Очищаем старое место
-                enemy.x = newX;
-                enemy.y = newY;
-                this.map[enemy.y][enemy.x] = "E";  // Помечаем новое место врага
-            }
+            let direction = Math.floor(Math.random() * 4);
+            this.moveEntity(enemy, direction);
         });
     
-        this.renderMap();  // Обновляем карту
+        this.renderMap();
     };
-    
+
     this.renderMap = function () {
         let field = $(".field");
         field.empty();
@@ -206,33 +197,4 @@ function Game() {
             }
         }
     };
-
-    this.placeItems = function (type, count) {
-        for (let i = 0; i < count; i++) {
-            let pos = this.getRandomEmptyCell();
-            if (pos) {
-                if (type === "SW") {
-                    this.map[pos.y][pos.x] = "SW";  // Размещение меча
-                } else if (type === "HP") {
-                    this.map[pos.y][pos.x] = "HP";  // Размещение хилка
-                }
-                if (type === "HP") {
-                    // Если это HP предмет, восстанавливаем здоровье героя
-                    game.map[pos.y][pos.x] = "HP";
-                }
-            }
-        }
-    };
-
-    this.healHero = function (hero) {
-        hero.health = Math.min(hero.health + 50, 100);  // Восстанавливаем здоровье, но не выше 100
-        console.log(`Восстановление! Текущее здоровье: ${hero.health}, атака: ${hero.attack}`);
-        this.checkHeroHealth();
-    };
-
-    this.pickUpSword = function (hero) {
-        hero.attack += 5;  // Повышаем атаку
-        console.log(`Получен меч! Текущее здоровье: ${hero.health}, атака: ${hero.attack}`);
-    };
-    
 }

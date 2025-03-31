@@ -18,7 +18,7 @@ function placeHero() {
     }
 
     let pos = emptyCells[Math.floor(Math.random() * emptyCells.length)];
-    map[pos.y][pos.x] = "P"; // Помечаем героя на карте
+    map[pos.y][pos.x] = "P";
     let hero = { x: pos.x, y: pos.y, health: 100, attack: 10 };
 
     console.log("Герой создан:", hero);
@@ -27,7 +27,6 @@ function placeHero() {
 
 
 
-// Размещение предметов
 function placeItems(type, count) {
     for (var i = 0; i < count; i++) {
         var pos = getRandomEmptyCell();
@@ -35,7 +34,6 @@ function placeItems(type, count) {
     }
 }
 
-// Размещение врагов
 function placeEnemies() {
     for (var i = 0; i < 10; i++) {
         var pos = getRandomEmptyCell();

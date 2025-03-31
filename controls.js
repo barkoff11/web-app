@@ -9,7 +9,7 @@ function attachControls(hero, game) {
     $(document).on("keydown", (event) => {
         if (game.isGameOver) {
             console.log("Игра окончена. Герой не может двигаться.");
-            return;  // Если игра окончена, не обрабатываем движения
+            return;  
         }
 
         let dx = 0, dy = 0;
@@ -38,7 +38,6 @@ function attachControls(hero, game) {
             if (game.map[newY][newX] === "SW") {
                 game.pickUpSword(hero);
             }
-            // Если на новом месте зелье — восстанавливаем здоровье
             if (game.map[newY][newX] === "HP") {
                 game.healHero(hero);
             }
@@ -46,11 +45,9 @@ function attachControls(hero, game) {
             game.map[hero.y][hero.x] = "floor";
             hero.x = newX;
             hero.y = newY;
-            // Помечаем героя на карте
             game.map[hero.y][hero.x] = "P";
             game.renderMap();
         }
-        // Двигаем врагов
         game.moveEnemies(game);
     });
 }
